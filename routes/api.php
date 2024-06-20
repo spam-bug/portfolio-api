@@ -28,4 +28,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
-Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('guest');

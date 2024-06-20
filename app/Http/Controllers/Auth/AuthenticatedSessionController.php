@@ -3,35 +3,30 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
 {
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(LoginRequest $request): Response
     {
-        $credentials = $request->validate([
-            "email" => "required",
-            "password" => "required",
-        ]);
+        $request->authenticate();
 
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid Credentials'], 401);
-        }
+        session()->regenerate();
 
-        return response()->json([
-            'data' => [
-                'user' => Auth::user(),
-            ],
-            'access_token' => Auth::user()->createToken('authentication')->plainTextToken,
-            'token_type' => 'Bearer',
-        ]);
+        return response()->noContent();
     }
 
-    public function destroy(Request $request): \Illuminate\Http\JsonResponse
+    public function destroy(Request $request): Response
     {
-        $request->user()->tokens()->delete();
+        Auth::guard('web')->logout();
 
-        return response()->json(['message' => 'Log out success']);
+        session()->invalidate();
+
+        session()->regenerateToken();
+
+        return response()->noContent();
     }
 }
